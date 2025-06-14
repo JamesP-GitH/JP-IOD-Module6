@@ -1,6 +1,7 @@
 import React from "react";
 import SingleCat from "./SingleCat";
 import { useState } from "react";
+import AddCatForm from "./AddCatForm";
 
 const cats = [
     {
@@ -42,35 +43,63 @@ const cats = [
     },
 ];
 
-const BigCats = () => {
+function BigCats() {
     const [catsList, setCatsList] = useState(cats);
+    const [displayedCats, setDisplayedCats] = useState(cats);
     const [latinFilter, setLatinFilter] = useState("");
+    const [sortOrder, setSortOrder] = useState(null);
+    const [idCounter, setIdCounter] = useState(cats.length + 1);
 
-    function handleSort(sortOption) {
-        const updatedList = [...catsList];
-        switch (sortOption) {
-            case "name-asc":
-                updatedList.sort((a, b) => a.name.localeCompare(b.name));
-                break;
-            case "name-desc":
-                updatedList.sort((a, b) => b.name.localeCompare(a.name));
-                break;
+    function applyFilterAndSort(filterText, sortOption, list = catsList) {
+        let result = [...list];
+
+        if (filterText) {
+            result = result.filter((cat) => cat.latinName.toLowerCase().includes(filterText.toLowerCase()));
         }
 
-        setCatsList(updatedList);
+        if (sortOption === "name-asc") {
+            result.sort((a, b) => a.name.localeCompare(b.name));
+        } else if (sortOption === "name-desc") {
+            result.sort((a, b) => b.name.localeCompare(a.name));
+        }
+
+        setDisplayedCats(result);
     }
 
-    function handleLatinFilter(value) {
-        const filteredList = cats.filter((cat) => cat.latinName.toLowerCase().includes(value.toLowerCase()));
+    function handleAddCat(newCat) {
+        const catWithId = { ...newCat, id: idCounter };
+        const updatedCats = [...catsList, catWithId];
+        setCatsList(updatedCats);
+        setIdCounter(idCounter + 1);
+        applyFilterAndSort(latinFilter, sortOrder, updatedCats);
+    }
 
-        setCatsList(filteredList);
+    function handleDeleteCat(idToDelete) {
+        const updatedCats = catsList.filter((cat) => cat.id !== idToDelete);
+        setCatsList(updatedCats);
+        applyFilterAndSort(latinFilter, sortOrder, updatedCats);
     }
 
     return (
         <div>
             <h2>Big Cats List</h2>
-            <button onClick={() => handleSort("name-asc")}>Sort A-Z</button>
-            <button onClick={() => handleSort("name-desc")}>Sort Z-A</button> <br />
+            <button
+                onClick={() => {
+                    setSortOrder("name-asc");
+                    applyFilterAndSort(latinFilter, "name-asc");
+                }}
+            >
+                Sort A-Z
+            </button>
+            <button
+                onClick={() => {
+                    setSortOrder("name-desc");
+                    applyFilterAndSort(latinFilter, "name-desc");
+                }}
+            >
+                Sort Z-A
+            </button>{" "}
+            <br />
             <input
                 type="text"
                 placeholder="Filter by Latin name"
@@ -78,18 +107,20 @@ const BigCats = () => {
                 onChange={(e) => {
                     const value = e.target.value;
                     setLatinFilter(value);
-                    handleLatinFilter(value);
+                    applyFilterAndSort(value, sortOrder);
                 }}
             />
             <ul style={{ listStyle: "none", padding: 0 }}>
-                {catsList.map((cat) => (
+                {displayedCats.map((cat) => (
                     <li key={cat.id}>
-                        <SingleCat name={cat.name} latinName={cat.latinName} image={cat.image} />
+                        <SingleCat name={cat.name} latinName={cat.latinName} image={cat.image} onDelete={() => handleDeleteCat(cat.id)} />
                     </li>
                 ))}
             </ul>
+            <br />
+            <AddCatForm onAddCat={handleAddCat}></AddCatForm>
         </div>
     );
-};
+}
 
 export default BigCats;
