@@ -1,5 +1,6 @@
 import React from "react";
 import SingleCat from "./SingleCat";
+import { useState } from "react";
 
 const cats = [
     {
@@ -12,7 +13,7 @@ const cats = [
         id: 2,
         name: "Cougar",
         latinName: "Puma concolor",
-        image: "https://lh5.googleusercontent.com/proxy/BdEIyeNGYgdLgQQ-puTCffozG1FUsTP7t89wWjIc0B5vgFDrQxFe993NP1k4cnuKZHaWHFIYbqOPyZ2pycQZuds-kxCqKtbiUcaHKOkex-bX16n_zuN4Ke_Cmwk",
+        image: "https://upload.wikimedia.org/wikipedia/commons/d/d6/Mountain_Lion_in_Glacier_National_Park.jpg",
     },
     {
         id: 3,
@@ -42,11 +43,47 @@ const cats = [
 ];
 
 const BigCats = () => {
+    const [catsList, setCatsList] = useState(cats);
+    const [latinFilter, setLatinFilter] = useState("");
+    const [sortOrder, setSortOrder] = useState(null);
+
+    function handleSort(sortOption) {
+        const updatedList = [...catsList];
+        switch (sortOption) {
+            case "name-asc":
+                updatedList.sort((a, b) => a.name.localeCompare(b.name));
+                break;
+            case "name-desc":
+                updatedList.sort((a, b) => b.name.localeCompare(a.name));
+                break;
+        }
+
+        setCatsList(updatedList);
+    }
+
+    function handleLatinFilter(value) {
+        const filteredList = cats.filter((cat) => cat.latinName.toLowerCase().includes(value.toLowerCase()));
+
+        setCatsList(filteredList);
+    }
+
     return (
         <div>
             <h2>Big Cats List</h2>
+            <button onClick={() => handleSort("name-asc")}>Sort A-Z</button>
+            <button onClick={() => handleSort("name-desc")}>Sort Z-A</button> <br />
+            <input
+                type="text"
+                placeholder="Filter by Latin name"
+                value={latinFilter}
+                onChange={(e) => {
+                    const value = e.target.value;
+                    setLatinFilter(value);
+                    handleLatinFilter(value);
+                }}
+            />
             <ul style={{ listStyle: "none", padding: 0 }}>
-                {cats.map((cat) => (
+                {catsList.map((cat) => (
                     <li key={cat.id}>
                         <SingleCat name={cat.name} latinName={cat.latinName} image={cat.image} />
                     </li>
