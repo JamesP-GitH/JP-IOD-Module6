@@ -45,7 +45,6 @@ const cats = [
 const BigCats = () => {
     const [catsList, setCatsList] = useState(cats);
     const [latinFilter, setLatinFilter] = useState("");
-    const [sortOrder, setSortOrder] = useState(null);
 
     function handleSort(sortOption) {
         const updatedList = [...catsList];
